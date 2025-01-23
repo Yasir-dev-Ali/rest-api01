@@ -1,57 +1,46 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { UsersService } from './users.service';
-
-
-@Controller('users')
-export class UsersController {
-    constructor(private readonly  userServices: UsersService ) {}
-    // users controller
-    /* 
-    Get all users,
-    Get user by id,
-    Create user,:Post
-    Update user by id,:Put
-    Delete user by id
-    patch user by id
-     */
-    @Get() // get all users
-    findAll(@Query('role') role?:'admin'|'user'|'guest') {
-
-        return this.userServices.findAll();
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+    ParseIntPipe,
+    ValidationPipe
+  } from '@nestjs/common';
+  import { UsersService } from './users.service';
+  import { createUserDto } from './dto/create-user.dto';
+    import { updateUserDto } from './dto/update.user.dto';
+  
+  @Controller('users')
+  export class UsersController {
+    constructor(private readonly userServices: UsersService) {}
+  
+    @Get() // Get all users, optionally filtered by role
+    findAll(@Query('role') role?: 'admin' | 'user' | 'guest') {
+      return this.userServices.findAll(role);
     }
-    @Get(':id') // get user by id
-    findOne(@Param('id') id: string) {
-       return this.userServices.findOne(id);
+  
+    @Get(':id') // Get user by ID
+    findOne(@Param('id', ParseIntPipe) id: number) {
+      return this.userServices.findOne(id);
     }
-   
-    @Post() // create user
-    create(@Body() users:{
-        name: string,
-        age: number,
-        email: string,
-        password: string,
-        role: 'admin'|'user'|'guest'
-
-    }) {
-        return this.userServices.create(users);
+  
+    @Post() // Create a new user
+    create(@Body(ValidationPipe) createUserDto: createUserDto) {
+      return this.userServices.create(createUserDto);
     }
-    // @Put(':id') // update user by id
-    // update(@Param('id') {id: string},@Body() users:{}) {
-    //     return {  ...users };
-    // }
-    @Delete(':id') // delete user by id
-    remove(@Param('id') id: string) {
-        return this.userServices.remove(id);
+  
+    @Delete(':id') // Delete a user by ID
+    remove(@Param('id', ParseIntPipe) id: number) {
+      return this.userServices.remove(id);
     }
-    @Patch(':id') // patch user by id
-    update(@Param('id') id: string, @Body() users:{
-        name: string,
-        age: number,
-        email: string,
-        password: string,
-        role: 'admin'|'user'|'guest'
-    }) {
-        return this.userServices.update(id, users);
+  
+    @Patch(':id') // Update specific fields for a user
+    patch(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) updateUserDto: updateUserDto) {
+      return this.userServices.patch(id, updateUserDto);
     }
-   
-}
+  }
+  
